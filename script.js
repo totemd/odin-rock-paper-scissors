@@ -16,65 +16,58 @@ function computerPlay() {
 // Compare playerSelection to computerSelection and return the message
 function compareSelections(playerSelection, computerSelection) {
     if (playerSelection === computerSelection) {
-        return "D";
+        return 2;   // Draw
     }
     else if (playerSelection === "Rock" && computerSelection === "Paper" ||
         playerSelection === "Paper" && computerSelection === "Scissors" ||
         playerSelection === "Scissors" && computerSelection === "Rock") {
-        return "L";
+        return 1;   // 1 = Loss
     }
     else {
-        return "W";
+        return 0;   // 0 = win
     }
 }
 
-// Get player input
-function getPlayerInput() {
-    let message = `Your turn:`
-    let keepAsking = true;
-    while (keepAsking) {
-        playerSelection = prompt(message);
-        if (playerSelection === null) {
-            return null;
-        } else {
-            playerSelection = playerSelection.capitalize();
-        }
-        keepAsking = !(playerSelection === "Rock" || playerSelection === "Paper" || playerSelection === "Scissors");
-        message = `Please enter a valid selection (rock, paper or scissors) !`;
+// Play round
+function playRound(e) {
+    const playerSelection = e.target.id.slice(4).capitalize();
+    const computerSelection = computerPlay();
+    const round = compareSelections(playerSelection, computerSelection);
+    const currentPlayLog = document.querySelector("#currentPlay");
+    switch (round) {
+        case 0:
+            currentPlayLog.textContent = `${playerSelection} beats ${computerSelection}: you win!`;
+            break;
+        case 1:
+            currentPlayLog.textContent = `${playerSelection} is beaten by ${computerSelection}: you lose!`;
+            break;
+        case 2:
+            currentPlayLog.textContent = `You both played ${playerSelection}: This is a draw!`;
+            break;
     }
-    return playerSelection;
+    updateScore(round);
 }
 
-// Play 5 rounds
-function game() {
-    let score = [0, 0, 0]; // Player wins, Computer wins, Draw
-    for (let i = 0; i < 5; i++) {
-        const playerSelection = getPlayerInput();
-        const computerSelection = computerPlay();
-        const round = compareSelections(playerSelection, computerSelection);
-        switch (round) {
-            case "W":
-                console.log(`${playerSelection} beats ${computerSelection}: you win!`);
-                score[0]++;
-                break;
-            case "L":
-                console.log(`${playerSelection} is beaten by ${computerSelection}: you lose!`);
-                score[1]++;
-                break;
-            case "D":
-                console.log(`You both played ${playerSelection}: This is a draw!`);
-                score[2]++;
-                break;
-            default:
-                console.log(`Something went wrong.`);
-        }
-    }
-    if (score[0] > score[1]) {
-        console.log(`You win ${score[0]} to ${score[1]}!`);
-    } else if (score[0] < score[1]) {
-        console.log(`You lose ${score[0]} to ${score[1]}!`);
-    } else {
-        console.log(`This is a draw: ${score[0]} to ${score[1]}!`);
+function updateScore(round) {
+    const scoreLog = document.querySelector("#score");
+    score[round]++;
+    scoreLog.textContent = `Player: ${score[0]} - Computer: ${score[1]} - Draws: ${score[2]}.`;
+    if (round != 2 && score[round] >= 5) {
+        endGame(round);
     }
 }
 
+function endGame(round) {
+    messages = [`You win!`, `Sorry, computer wins...`];
+    const scoreContainer = document.querySelector("#scoreContainer");
+    const endGameLog = document.createElement("p");
+    endGameLog.textContent = messages[round];
+    scoreContainer.appendChild(endGameLog);
+    buttons.forEach(button => button.removeEventListener("click", playRound));
+}
+
+
+// Initialize game
+let score = [0, 0, 0]; // Player wins, Computer wins, Draw
+const buttons = document.querySelectorAll("button");
+buttons.forEach(button => button.addEventListener("click", playRound));
